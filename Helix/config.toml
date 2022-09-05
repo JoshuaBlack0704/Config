@@ -6,5 +6,9 @@ cursorline = true
 line-number = "relative"
 scrolloff = 100
 indent-guides.render = true
+[editor.cursor-shape]
+insert = "bar"
+[keys.insert]
+A-q = "normal_mode"
 [editor.lsp]
 display-messages = true
