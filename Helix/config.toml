@@ -3,12 +3,13 @@ theme = "onedark"
 [editor]
 color-modes = true
 cursorline = true
-line-number = "relative"
 scrolloff = 100
 indent-guides.render = true
+auto-format = false
 [editor.cursor-shape]
 insert = "bar"
 [keys.insert]
 A-q = "normal_mode"
 [editor.lsp]
 display-messages = true
+display-signature-help-docs = false
