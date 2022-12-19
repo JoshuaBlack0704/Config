@@ -1,4 +1,4 @@
-theme = "onedark"
+theme = "doom_acario_dark"
 
 [editor]
 color-modes = true
