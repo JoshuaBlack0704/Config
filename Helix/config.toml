@@ -6,6 +6,7 @@ cursorline = true
 scrolloff = 100
 indent-guides.render = true
 auto-format = false
+soft-wrap.enable = true
 [editor.cursor-shape]
 insert = "bar"
 [keys.insert]
