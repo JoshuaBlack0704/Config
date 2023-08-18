@@ -16,11 +16,11 @@ services:
       - gconfig:/etc/gitlab
       - glogs:/var/log/gitlab
       - gdata:/var/opt/gitlab
-    shm_size: 256m
+    shm_size: 1024m
     networks:
       - devenv
   youtrack:
-    image: jetbrains/youtrack:2023.1.17170
+    image: jetbrains/youtrack:2023.1.17582
     restart: always
     hostname: youtrack.jbbjhome.com
     ports:
