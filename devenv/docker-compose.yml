@@ -1,0 +1,81 @@
+version: '3'
+services:
+  traefik:
+    image: traefik:latest
+    restart: always
+    command: 
+      --api.insecure=true 
+      --providers.docker 
+      --entrypoints.web.address=:80
+      --entrypoints.websecure.address=:443
+    ports:
+    - "80:80"
+    - "8080:8080"
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      proxy:
+  nginx:
+    image: nginx
+    ports:
+    - "1000:80"
+    - "1001:443"
+    labels:
+    - "traefik.http.routers.nginx.rule=Host(`nginx.localhost`)"
+    - traefik.http.routers.nginx.entrypoints=web
+
+    networks:
+      proxy:
+    
+  youtrack:
+    image: jetbrains/youtrack:2023.1.17582
+    restart: always
+    hostname: youtrack.jbbjhome.com
+    ports:
+      - 58080:8080
+    volumes:
+      - yconf:/opt/youtrack/conf
+      - ylogs:/opt/youtrack/logs
+      - ybackups:/opt/youtrack/backups
+      - ydata:/opt/youtrack/data
+    labels:
+    - "traefik.http.routers.youtrack.rule=Host(`youtrack.localhost`)"
+    - traefik.http.routers.youtrack.entrypoints=web
+    networks:
+      proxy:
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    restart: always
+    hostname: gitlab.localhost.com
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab.locolhost.com'
+        nginx['listen_https'] = false
+        nginx['listen_port'] = 80
+        gitlab_rails['gitlab_shell_ssh_port'] = 50022
+        # Add any other gitlab.rb configuration here, each on its own line
+    labels:
+      - traefik.http.routers.gitlab.rule=Host(`gitlab.localhost`)
+      - traefik.http.services.gitlab.loadbalancer.server.port=80
+      - traefik.http.routers.gitlab.entrypoints=web
+    ports:
+      - 50080:80
+      - 50443:443
+      - 50022:22
+    volumes:
+      - gconfig:/etc/gitlab
+      - glogs:/var/log/gitlab
+      - gdata:/var/opt/gitlab
+    shm_size: 256m
+    networks:
+      proxy:
+networks:
+  proxy:
+volumes:
+  gconfig:
+  glogs:
+  gdata:
+  yconf:
+  ylogs:
+  ybackups:
+  ydata:
