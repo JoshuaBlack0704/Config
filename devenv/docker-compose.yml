@@ -15,34 +15,38 @@ services:
   traefik:
     image: traefik:latest
     restart: always
+    environment:
+    # - CF_API_KEY=8dc4460db847017fe91f73b6944d841f23894
+     - CF_DNS_API_TOKEN=9WpvfhdV6Wp8dpjknwrTcs2UzB1x_NFvgD-lbq0O
     command: 
-      --api.insecure=true 
-      --providers.docker 
-      --entrypoints.web.address=:80
-      --entrypoints.websecure.address=:443
-      --certificatesresolvers.cf.acme.email=jtblack0704@gmail.com
-      --certificatesresolvers.cf.acme.storage=/ssl/acme.json
-      --certificatesresolvers.cf.acme.dnschallenge=true
-      --certificatesresolvers.cf.acme.dnschallenge.provider=cloudflare
-      --certificatesresolvers.cf.acme.dnschallenge.resolvers=1.1.1.1:53,1.0.0.1:53
-      --certificatesresolvers.cf.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --api.insecure=true 
+      - --providers.docker 
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.cf.acme.email=jtblack0704@gmail.com
+      - --certificatesresolvers.cf.acme.storage=/ssl/acme.json
+      - --certificatesresolvers.cf.acme.dnschallenge=true
+      - --certificatesresolvers.cf.acme.dnschallenge.provider=cloudflare
+      - --certificatesresolvers.cf.acme.dnschallenge.resolvers=1.1.1.1:53,1.0.0.1:53
+      - --certificatesresolvers.cf.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
     ports:
     - "80:80"
     - "443:443"
     - "8080:8080"
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
-    - C:\Users\jtbla\Documents\git\Config\devenv\traefik\data\acme.json:/ssl/acme.json
+    - ./traefik/data/acme.json:/ssl/acme.json
     networks:
       proxy:
   nginx:
     image: nginx
     labels:
+    # - traefik.enabled=true
     - traefik.http.routers.nginx.rule=Host(`nginx.cloud.jbbjhome.com`)
-    - traefik.http.routers.nginx.entrypoints=web
+    - traefik.http.routers.nginx.entrypoints=websecure
     - traefik.http.services.nginx.loadbalancer.server.port=80
     - traefik.http.routers.nginx.tls=true
-    - traefik.http.routers.nginx.certresolver=cf
+    - traefik.http.routers.nginx.tls.certresolver=cf
     - traefik.http.routers.nginx.tls.domains[0].main=cloud.jbbjhome.com
     - traefik.http.routers.nginx.tls.domains[0].sans=*.cloud.jbbjhome.com
 
@@ -51,6 +55,7 @@ services:
   nginx-local:
     image: nginx
     labels:
+    - traefik.enabled=true
     - traefik.http.routers.nginx_local.rule=Host(`nginx.localhost`)
     - traefik.http.routers.nginx_local.entrypoints=web
     - traefik.http.services.nginx_local.loadbalancer.server.port=80
@@ -68,34 +73,35 @@ services:
       - ybackups:/opt/youtrack/backups
       - ydata:/opt/youtrack/data
     labels:
-    - "traefik.http.routers.youtrack.rule=Host(`youtrack.cloud.jbbjhome.com`)"
+    - traefik.enabled=true
+    - traefik.http.routers.youtrack.rule=Host(`youtrack.cloud.jbbjhome.com`)
     - traefik.http.routers.youtrack.entrypoints=web
     - traefik.http.services.youtrack.loadbalancer.server.port=8080
     
     networks:
       proxy:
-  gitlab:
-    image: gitlab/gitlab-ce:latest
-    restart: always
-    hostname: gitlab.localhost.com
-    environment:
-      GITLAB_OMNIBUS_CONFIG: |
-        external_url 'http://gitlab.locolhost.com'
-        nginx['listen_https'] = false
-        nginx['listen_port'] = 80
-        gitlab_rails['gitlab_shell_ssh_port'] = 50022
-        # Add any other gitlab.rb configuration here, each on its own line
-    labels:
-      - traefik.http.routers.gitlab.rule=Host(`gitlab.localhost`)
-      - traefik.http.services.gitlab.loadbalancer.server.port=80
-      - traefik.http.routers.gitlab.entrypoints=web
-    volumes:
-      - gconfig:/etc/gitlab
-      - glogs:/var/log/gitlab
-      - gdata:/var/opt/gitlab
-    shm_size: 256m
-    networks:
-      proxy:
+  # gitlab:
+  #   image: gitlab/gitlab-ce:latest
+  #   restart: always
+  #   hostname: gitlab.localhost.com
+  #   environment:
+  #     GITLAB_OMNIBUS_CONFIG: |
+  #       external_url 'http://gitlab.locolhost.com'
+  #       nginx['listen_https'] = false
+  #       nginx['listen_port'] = 80
+  #       gitlab_rails['gitlab_shell_ssh_port'] = 50022
+  #       # Add any other gitlab.rb configuration here, each on its own line
+  #   labels:
+  #     - traefik.http.routers.gitlab.rule=Host(`gitlab.localhost`)
+  #     - traefik.http.services.gitlab.loadbalancer.server.port=80
+  #     - traefik.http.routers.gitlab.entrypoints=web
+  #   volumes:
+  #     - gconfig:/etc/gitlab
+  #     - glogs:/var/log/gitlab
+  #     - gdata:/var/opt/gitlab
+  #   shm_size: 256m
+  #   networks:
+  #     proxy:
 networks:
   proxy:
 volumes:
