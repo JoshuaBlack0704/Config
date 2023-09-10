@@ -42,6 +42,10 @@ services:
     image: nginx
     labels:
     # - traefik.enabled=true
+    - traefik.http.routers.nginx-http.entrypoints=web
+    - traefik.http.routers.nginx-http.rule=Host(`nginx.cloud.jbbjhome.com`)
+    - traefik.http.routers.nginx-http.middlewares=nginx-https
+    - traefik.http.middlewares.nginx-https.redirectscheme.scheme=https
     - traefik.http.routers.nginx.rule=Host(`nginx.cloud.jbbjhome.com`)
     - traefik.http.routers.nginx.entrypoints=websecure
     - traefik.http.services.nginx.loadbalancer.server.port=80
